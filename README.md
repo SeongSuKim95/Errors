@@ -29,3 +29,19 @@ Server관리하면서 생긴 일들 기록하기..
         - 비밀번호 입력을 원하면 비밀번호 입력, 아니면 enter
     - Github의 settings 메뉴에서, New SSH keys를 누른후 id_rsa.pub의 내용을 복붙한다.
     - 이후 git clone을 다시 해보면 clone이 잘될것이야
+
+- 0318 ssh-keygen을 통한 비밀번호 자동인증
+    - SSH Key : 서버에 접속할 때 비밀번호 대신 key를 제출하는 방식
+    - 공개키(Public key)와 비밀키(Private Key)로 이루어 지며 private key는 local에 위치하고, public key는 서버에 위치한다. 암호를 걸 때와 풀 때 사용하는 키가 다르기 때문에 비대칭 암호방식이라고 한다. Public key는 평문을 암호화 한다면 비밀키는 암호문을 다시 평문으로 변환
+    - Windows (local)
+        - 1.power shell 에서 ssh-keyfen으로 키를 생성(저장위치 : c:\users\.ssh\id_rsa)
+        - 2.scp .ssh\id_rsa.pub ID@server_ip 로 서버에 public키 전송
+    - Server (Linux)
+        ``` console
+        chmod 700 .ssh/
+        cat id_rsa.pub >> .ssh/authorized_keys
+        chmod 600 .ssh/authorized_keys
+        ```
+    - 비밀번호 없이 접속!
+
+        
