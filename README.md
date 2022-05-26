@@ -33,6 +33,7 @@ Server관리하면서 생긴 일들 기록하기..
 - 0318 ssh-keygen을 통한 비밀번호 자동인증
     - SSH Key : 서버에 접속할 때 비밀번호 대신 key를 제출하는 방식
     - 공개키(Public key)와 비밀키(Private Key)로 이루어 지며 private key는 local에 위치하고, public key는 서버에 위치한다. 암호를 걸 때와 풀 때 사용하는 키가 다르기 때문에 비대칭 암호방식이라고 한다. Public key는 평문을 암호화 한다면 비밀키는 암호문을 다시 평문으로 변환
+    - Windows [[LINK]](https://sojinhwan0207.tistory.com/62) , Linux [[LINK]](https://jjeongil.tistory.com/1288)
     - Windows (local)
         - 1.power shell 에서 ssh-keyfen으로 키를 생성(저장위치 : c:\users\.ssh\id_rsa)
         - 2.scp .ssh\id_rsa.pub ID@server_ip 로 서버에 public키 전송
@@ -43,5 +44,33 @@ Server관리하면서 생긴 일들 기록하기..
         chmod 600 .ssh/authorized_keys
         ```
     - 비밀번호 없이 접속!
+- 0319 
+    - https://www.manualfactory.net/13414
+    - https://conory.com/blog/19194
 
-        
+- 0404
+    - 연구실에 있는 서버를 서버실로 전부 옮기면서 각 서버마다 고정 ip설정을 바꿔줘야하는 일이 생겼다.
+    - Ubuntu version에 따라 gui가 있는 경우가 있고 없는 경우가 있는데, 없는 경우 직접 network 설정 파일을 수정해줘야한다.(처음해봐서 삽질 했음...)
+        - 일단 제일 먼저 랜선의 불이 깜빡이는지 확인하고, ifconfig를 통해 device가 잡고 있는 network의 이름을 확인하다.  
+        - 확인 했다면, etc/netplan의 yaml파일을 직접 수정
+            - 1. ethernet의 이름은 아까 확인한 network의 이름으로 바꿔주기
+            - 2. 고정ip사용하므로 dhcp는 False
+            - 3. addresses는 변경할 ip를 적어주면 되고(ex: 163.239.13.24/24) , gateway는 1번 (ex: 163.239.13.1)
+            - 4. nameservers addresses : gate way와 netmask 적어주면 된다. [163.239.1.1,8.8.8.8] (Google DNS Server)
+        - 파일을 수정했으면,  sudo netplan apply 이후 재부팅 해주면 ip 변경 완료!
+- 0526 SSL certificate 갱신 
+    - 갑자기 애들이 서버 로그인이 안된다고 해서, 확인해보니 permission denied 가 뜨더라
+    - 처음엔 user 계정의 권한 문제인줄 알았는데 한참 헤매다보니 NAS의 LDAP Server 인증서가 만료된 문제 인걸 알았다.
+        - Synology NAS 관리 페이지의 Security -> Certificate 에서 Add
+        - Replace an existing certificate
+        - Create self-signed certificate 
+        - 인증서 만들고 난 후, Export certificate을 통해 pem파일을 다운 받는다
+    - Pem 파일 중 root certificate만 각 server에 넣고 등록해주면 되는데, zip파일 안의 syno-ca-cert.pem 파일이다.
+    - 확장자 pem을 crt로 바꾼 후, 각 server의 /usr/local/share/ca-certificates에 복사 
+    - 복사했다면 sudo update-ca-certificates 이후, 재부팅 하면 끝이다.[[LINK]](https://ubuntu.com/server/docs/security-trust-store)
+        ```console
+        sudo apt-get install -y ca-certificates
+        sudo cp local-ca.crt /usr/local/share/ca-certificates
+        sudo update-ca-certificates
+        ```
+    - 만료된 crt 파일은 지워도 상관없음. 
