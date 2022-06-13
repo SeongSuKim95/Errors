@@ -73,4 +73,19 @@ Server관리하면서 생긴 일들 기록하기..
         sudo cp local-ca.crt /usr/local/share/ca-certificates
         sudo update-ca-certificates
         ```
-    - 만료된 crt 파일은 지워도 상관없음. 
+    - 만료된 crt 파일은 지워도 상관없음.
+
+- 0604 Conda Enviornment
+    - 연구실 구성원 한명이 본인의 로그인 환경에서 cuda가 잡히질 않는다고 며칠을 쩔쩔매고 있었다.
+    - 문제를 파악 해본 결과 (문제가 되고 있는 User ID를 A, 가상환경을 B라고 할때)
+        1. A로 로그인 하여, B 가상환경에서 torch.cuda.is_available() 확인시 False
+        2. A로 로그인 하였을때, A의 나머지 가상환경에서 torch.cuda.is_available() 확인시 True
+        3. C로 로그인 할 경우, A의 모든 가상환경(B포함)에서 torch.cuda.is_available() 확인 시 True
+    - 처음엔 이게 무슨 문제인지.. 도저히 이해가 안갔다. 로그인 계정에 따라 같은 가상환경에서 결과가 다르다니?
+        - 일단 B 가상환경에 깔린 torch를 확인해보니 , 서버의 gpu와 cuda version이 일치했다.
+        - nvidia-smi 명령어도 잘 된다.
+        - Conda 설정 문제라고 생각해서 A의 home directory에 있는 bash.rc의 cuda와 conda initialize 부분을 check했다. 문제가 없었다.
+        - A가 B 가상환경으로 프로젝트 code를 실행시키는 과정에서 오류가 나서 이를 해결하려고 bin의 x86_6-conda-linux-gnu-ld 파일을 건드린 적이 있다고 해서, 찾아보니 library loader 파일이라고 한다. 지금까지 이파일이 문제가 됐던 기억은 없는데,, 이상하다고 생각했다.
+        - 몇시간을 삽질하다가 차분히 error를 debugging해보니, B 가상환경에서 A의 다른 가상환경(D)에 있는 torch package를 불러오는 것을 알 수 있었다. D의 torch version이 cpu version이다.
+        - 일단 임시방편으로, D의 torch version을 gpu version으로 바꾸고 cuda version도 맞춰주었다.
+    - 문제가 해결되었다.. 굉장히 단순한 문제였는데, 복잡한 문제일거라고 생각해서 삽질을 좀 했다..
