@@ -1,6 +1,5 @@
-# Linux
 
-Server관리하면서 생긴 일들 기록하기..
+# 연구실 Server 관리하면서 생긴 일들 기록하기..
 
 - 0314
     - Server들의 Ubuntu를 update 하고 , 재부팅을 하는데 43번만 로그인이 안되어서 보니 booting 과정에 문제가 있었음 
